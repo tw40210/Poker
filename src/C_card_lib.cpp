@@ -4,9 +4,10 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 #include <algorithm>
 #include <chrono>
-
+#include "C_utils_lib.h"
 
 using namespace std;
 
@@ -15,15 +16,18 @@ class CardLib
 {
     public:
         CardLib();
-        double* checkWinRate(double* ret, int c1[], int c2[], int n);
+        double* checkWinRate(double* , int[], int[], int );
     private:
         map<string, int> typeMap;
-        int checkWin(pair<string, vector<int>> h1, pair<string, vector<int>> h2);
+        int cardsMax=7;
+        int checkWin(const pair<string, vector<int>>& , const pair<string, vector<int>>& );
         pair<string, vector<int>> checkType(vector<int>);
+        void getFullHand(vector<int>& ,vector<int>& , int , set<int>& );
 
 };
 
 CardLib::CardLib(){
+    srand((unsigned)time(NULL)); 
     this->typeMap={{"FlOr",9}, {"Four",8}, {"FuHo",7}, {"Flus",6}, {"Orde",5}, {"Thre",4}, {"TwPa",3}, {"Pair",2}, {"High",1}};
 }
 
@@ -52,7 +56,7 @@ pair<string, vector<int>> CardLib::checkType(vector<int> c1){
     vector<vector<int>> f_memo(4);
     for(int i=0;i<c1.size();i++){
         int tmp=c1[i]/13;
-        f_memo[tmp].push_back(c1[i]);
+        f_memo[tmp].push_back(c1[i]%13);
         if(f_memo[tmp].size()>=5){flu=true;flu_f=tmp;}
     }
 
@@ -109,6 +113,12 @@ pair<string, vector<int>> CardLib::checkType(vector<int> c1){
 
         return {"TwPa", {memo[2][memo[2].size()-1], memo[2][memo[2].size()-2], memo[1].back()}};
         }
+    else if (memo.find(2)!=memo.end()&& memo[2].size()>=1){
+        auto it = std::find(memo[1].begin(), memo[1].end(), memo[2].back());
+        if(it!=memo[1].end()) memo[1].erase(it);
+
+        return {"Pair", {memo[2].back(), memo[1][memo[1].size()-1], memo[1][memo[1].size()-2], memo[1][memo[1].size()-3]}};
+        }
     else{
         vector<int> ret;ret.reserve(5);
 
@@ -118,16 +128,35 @@ pair<string, vector<int>> CardLib::checkType(vector<int> c1){
     }
 }
 
+void CardLib::getFullHand(vector<int>& c1,vector<int>& c2, int addNum, set<int>& handCards){
+    int tmp;
+    while(addNum>0){
+        tmp=rand()%52;
+        if(handCards.find(tmp)!=handCards.end()) continue;
+        c1[cardsMax-addNum]=tmp;c2[cardsMax-addNum]=tmp;
+        addNum--;
+    }
+}
+
 
 double* CardLib::checkWinRate(double* ret, int* in_c1, int* in_c2, int n) {
-    vector<int> c1(in_c1, in_c1+n);
-    vector<int> c2(in_c2, in_c2+n);
+    set<int> handCards;
+    vector<int> c1(cardsMax, -1); for(int i=0;i<n;i++){ c1[i]=in_c1[i];handCards.insert(in_c1[i]);}
+    vector<int> c2(cardsMax, -1); for(int i=0;i<n;i++){ c2[i]=in_c2[i];handCards.insert(in_c2[i]);}
+
+
     int tmp, try_max=10000;
     double win=0,draw=0,lose=0;
-    cout << "checkWinRate in c++" << endl;
+    // cout << "checkWinRate in c++" << endl;
 
     for(int i=0;i<try_max;i++){
+        getFullHand(c1,c2,cardsMax-n,handCards);
+        // readablePrint(c1);
+        // readablePrint(c2);
+
         tmp = checkWin(checkType(c1), checkType(c2));
+        // cout<<tmp<<endl;
+        // cout<<"============"<<endl;
         if(tmp==1) win+=1;
         else if(tmp==-1) lose+=1;
         else if(tmp==0) draw+=1;
@@ -136,12 +165,15 @@ double* CardLib::checkWinRate(double* ret, int* in_c1, int* in_c2, int n) {
     ret[1]=lose/try_max;
     ret[2]=draw/try_max;
 
-    ret[2]=5.23;
-
     return ret;
 }
 
-int CardLib::checkWin(pair<string, vector<int>> h1, pair<string, vector<int>> h2) {
+int CardLib::checkWin(const pair<string, vector<int>>& h1, const pair<string, vector<int>>& h2) {
+    // cout<<h1.first<<' ';for(int i:h1.second) cout<<i<<' ';
+    // cout<<endl;
+    // cout<<h2.first;for(int i:h2.second) cout<<i<<' ';
+    // cout<<endl;
+
     if(typeMap[h1.first]==typeMap[h2.first]){
         for(int i=0;i<h1.second.size();i++){
             if(h1.second[i]!=h2.second[i]) return h1.second[i]>h2.second[i]?1:-1;
