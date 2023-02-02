@@ -1,4 +1,13 @@
-__author__ = 'xidui'
+
+import tkinter as tk
+
+window = tk.Tk()
+window.title('GUI')
+window.geometry('380x400')
+window.resizable(False, False)
+window.iconbitmap('icon.ico')
+window.mainloop()
+
 import ctypes
 from time import time
 so = ctypes.cdll.LoadLibrary
@@ -28,8 +37,8 @@ def get_indexed_array(cards_str):
     return ret
 
 print('passDoubleArr')
-a1="!J @A"
-a2="@Q !Q"
+a1="!A @A"
+a2="@7 $3"
 i1=get_indexed_array(a1)
 i2=get_indexed_array(a2)
 
@@ -38,13 +47,12 @@ ret_num=3
 lib.checkWinRate.restype = ctypes.POINTER(ctypes.c_double * ret_num)
 lib.checkWinRate.argtypes = [(ctypes.c_double*ret_num), (ctypes.c_int*card_num), (ctypes.c_int*card_num), ctypes.c_int]
 
-time0= time()
-for i in range(1):
-    ret=(ctypes.c_double*ret_num)(*[0.0,0.0,0.0])
-    p=lib.checkWinRate(ret,(ctypes.c_int*card_num)(*i1), (ctypes.c_int*card_num)(*i2), card_num)
-time1= time()
-print("time: ", time1-time0)
-for i in p.contents: print(i)
+ret=(ctypes.c_double*ret_num)(*[0.0,0.0,0.0])
+p=lib.checkWinRate(ret,(ctypes.c_int*card_num)(*i1), (ctypes.c_int*card_num)(*i2), card_num)
+
 # print(p)
 # print(str(lib.checkWinRate((ctypes.c_double*3)(*[0.0,0.0,0.0]),(ctypes.c_int*card_num)(*i1), (ctypes.c_int*card_num)(*i2), card_num)) + ' in python')
 print('--------------------')
+
+#source ../py_env/bin/activate
+#python Py_card_main.py
