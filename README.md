@@ -1,4 +1,4 @@
-# Texas Hold'em Win Rate Calculator
+# Texas Hold'em Win Rate Calculator(Combine C++ and Python)
 This project simply provide a C++ based win rate calculator with python interface, which provide both fast speed and ease of feature development.
 
 # Requirements
